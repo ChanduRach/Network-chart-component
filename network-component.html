@@ -1,0 +1,185 @@
+<template component="network-chart" width="700" height="400">
+    <script type="application/json">
+        {
+            "properties": [{
+                    "name": "width",
+                    "type": "number",
+                    "value": 500
+                },
+                {
+                    "name": "height",
+                    "type": "number",
+                    "value": 600
+                }
+            ]
+        }
+    </script>
+
+    <script>
+        // $target.data.data has the required data
+        document.body.addEventListener('render', function (e) {
+            if (!e.target.matches('network-chart')) return
+            circleWidth = 3;
+            //looping links to create nodes
+
+            d3.json("https://gist.githubusercontent.com/revskill10/4049308/raw/57efc3dcd463dde0d62304661a94b41718edc500/tags.json", function(json){
+          //  links.forEach(function (link) {
+
+            //     //console.log(links)
+            //     link.source = nodes[link.source] || (nodes[link.source] = {
+            //         name: link.source
+            //     });
+            //     // console.log(link.source)
+            //     link.target = nodes[link.target] || (nodes[link.target] = {
+            //         name: link.target
+            //     });
+            // });
+            var colors = d3.scale.category20();
+
+            //adding svg to the body
+            var svg = d3.select('network-chart').append('svg')
+                .attr('width', e.target.width)
+                .attr('height', e.target.height)
+                .attr('transform', 'translate(50,50)');
+            // .attr('viewBox','0 0 1000 800')
+
+
+            var force = d3.layout.force() //build the layout
+                .size([e.target.width, e.target.height])
+                .nodes(json.nodes) //add nodes
+                .links(json.links) //add links
+                .on("tick", tick) //what to do
+                .linkDistance(200) //set for proper svg size
+                .charge(-300) // avoids overlapping
+                .start();
+
+
+            // add the links
+            var link = svg.selectAll('.link')
+                .data(json.links)
+                .enter().append('line')
+                .attr('class', 'link')
+                .attr('stroke', '#E5E8E8')
+                .attr('strokewidth', '1');
+
+
+            // add the nodes
+            var node = svg.selectAll('.node')
+                .data(json.nodes) //add
+                .enter().append('circle')
+                .attr('class', 'node')
+                //.attr('r',  e.target.width * 0.03) //radius of circle
+                .attr('r', function (d, i) {
+                    // console.log(d.value);
+                    // if (i > 1) {
+                    return circleWidth + d.weight + '%';
+                    //} 
+                    // else {
+                    //     return circleWidth + 35;
+                    // }
+                })
+                .attr('fill', function (d, i) {
+                    if (i > 1) {
+                        return colors(i);
+                    } else {
+                        return '#c7c7c7';
+                    }
+                })
+                .attr('strokewidth', function (d, i) {
+                    if (i > 1) {
+                        return '0';
+                    } else {
+                        return '2';
+                    }
+                })
+                .attr('stroke', function (d, i) {
+                    if (i > 1) {
+                        return '';
+                    } else {
+                        return 'black';
+                    }
+                });
+
+            var label = svg.append("g")
+                .attr("class", "labels")
+                .selectAll("text")
+                .data(json.nodes)
+                .enter().append("text")
+                .attr("class", "label")
+                .text(function (d) {
+                    return d.name;
+                })
+                .attr('text-anchor', function (d, i) {
+                    return 'middle';
+                })
+                .attr('font-size', function (d, i) {
+                    if (i > 1) {
+                        return '.8em';
+                    } else {
+                        return '.9em';
+                    }
+                })
+
+
+            function tick(e) {
+
+                node.attr('cx', function (d) {
+                        return d.x;
+                    })
+                    .attr('cy', function (d) {
+                        return d.y;
+                    })
+                    .call(force.drag);
+
+                link.attr('x1', function (d) {
+                        return d.source.x;
+                    })
+                    .attr('y1', function (d) {
+                        return d.source.y;
+                    })
+                    .attr('x2', function (d) {
+                        return d.target.x;
+                    })
+                    .attr('y2', function (d) {
+                        return d.target.y;
+                    });
+
+                label
+                    .attr("x", function (d) {
+                        return d.x;
+                    })
+                    .attr("y", function (d) {
+                        return d.y;
+                    })
+                    .style("font-size", "10px").style("fill", "#fff");
+            }
+
+        });
+
+ 
+
+        debugger;
+        //adding new data
+        var obj = json;
+        //obj.push({"source":"TL","target":"Sw"});
+        obj.splice(2, 0, {
+            "source": "TL",
+            "target": "Sw"
+        });
+        jsonStr = JSON.stringify(obj);
+
+    });
+// d3.select('body').append('button').text('click').on("click", function() {
+//     tick(jsonStr)
+// })
+
+        //removing
+        // links.forEach(function (data) {
+        //     var sliceData = data;
+        //     delete sliceData.source;
+        //     //sliceData = sliceData.slice('BRL');
+        //     console.log(links)
+        // });
+    </script>
+
+</template>
