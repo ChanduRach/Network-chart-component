@@ -1,30 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>network-chart-component</title>
-  </head>
-  <body>
-
-    <network-chart id="mychart" node-filter:expr="true" link-filter:expr="d.value > 6" node-size= "5 + 3*d.color" node-fill= "color(d.color)"></network-chart>
-
-     
-<script src="https://d3js.org/d3.v3.min.js"></script>
-    <script src="node_modules/lodash/lodash.min.js"></script>
-    <script src="https://unpkg.com/uifactory@0.0.9/uifactory.js" import="./network-component.html"></script>
- 
-    
-    <script>
-
-        let color = d3.scale.linear()
-                    .domain([0, 5])
-                    .range(['red', 'blue']);
-
-     let dataSet = document.querySelector('#mychart').data = [
-         { 
+{ 
   "nodes": [ 
-    { "name": "01", "group": 1, "color": 1 },
+    { "name": "Ma1", "group": 1, "color": 1 },
     { "name": "1", "group": 1, "color": 1  },
     { "name": "2", "group": 1, "color": 1  },
     { "name": "3", "group": 1 , "color": 2 },
@@ -46,6 +22,8 @@
 	{ "name": "19", "group": 5 , "color": 5 }
   ],
   "links": [ 
+	{ "source": 1, "target": 2, "value" : 1 },
+	{ "source": 6, "target": 16, "value" : 1 },
 	{ "source": 6, "target": 16, "value" : 1 },
     { "source": 0, "target": 7, "value" : 2 },
 	{ "source": 0, "target": 10, "value" : 2 },
@@ -54,19 +32,6 @@
 	{ "source": 11, "target": 14, "value" : 6 },
 	{ "source": 9, "target": 11, "value" : 6},
 	{ "source": 13, "target": 16, "value" : 7},
-	{ "source": 13, "target": 18, "value" : 7},
-    { "source": 3, "target": 12, "value" : 7},
-    { "source": 18, "target": 16, "value" : 7}
+	{ "source": 13, "target": 18, "value" : 7}
   ] 
 }
-]
-        uifactory.types.expr = {
-          parse: s => s ? new Function('d', `return ${s || 'true'}`) : s,
-                           // function(d) { return d.x > 10 && d.y < 0 }
-          stringify: v => v
-        }
-        </script>
-
-  </body>
-  </html>
-  
