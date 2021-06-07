@@ -39,6 +39,9 @@
 </head>
 
 <body>
+    <div class="row">
+        <dic class="col-md-4" id="tooltipholder">
+        <div class="col-md-8" id="vis">
     <network-chart-v5 id="mychart" node-filter:rowexpr="true" link-filter:rowexpr="d.value > 2"
         node-size="5 + 3*d.color" node-fill="color(d.color)" node-tooltip="`<em>node name</em> is ${d.name}`"
         node-label="d.name" node-popover-title="`<em>Title of the node</em> - ${d.name}`"
@@ -51,11 +54,25 @@
 
 
     <script>
-        // $(function () {
-        //     // Enables popover
-        //     $("[data-toggle=popover]").popover();
-        // });
-        
+    // $(function () {
+    //     //     // Enables popover
+    //    $("[data-toggle=popover]").popover();
+    // });
+
+   
+    
+document.querySelector('#mychart').addEventListener('brush', function (e) {
+    console.log(e.detail.nodes)   // Logs all brushed nodes
+  })
+  
+  document.querySelector('#mychart').addEventListener('pin', function (e) {
+    console.log(e.detail.nodes)   // Logs pinned nodes
+  })
+  
+  document.querySelector('#mychart').addEventListener('releasenodes', function (e) {
+    console.log(e.detail.nodes)   // Logs released nodes
+  })
+  
         let color = d3.scaleLinear()
             .domain([0, 5])
             .range(['green', 'blue']);
