@@ -18,7 +18,7 @@
     <script src="//code.jquery.com/jquery.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.js"></script>
     <style>
-        div.tooltip {
+        div.tooltip, div.nodeInfo {
             position: absolute;
             background-color: white;
             max-width: 200px;
@@ -34,14 +34,11 @@
         .extent {
             fill: #ececec;
         }
+        
     </style>
 </head>
 
 <body>
-
-
-
-
     <network-chart-v5 id="mychart" node-filter:rowexpr="true" link-filter:rowexpr="d.value > 2"
         node-size="5 + 3*d.color" node-fill="color(d.color)" node-tooltip="`<em>node name</em> is ${d.name}`"
         node-label="d.name" node-popover-title="`<em>Title of the node</em> - ${d.name}`"
@@ -58,10 +55,10 @@
         //     // Enables popover
         //     $("[data-toggle=popover]").popover();
         // });
-
+        
         let color = d3.scaleLinear()
             .domain([0, 5])
-            .range(['red', 'blue']);
+            .range(['green', 'blue']);
 
 
         uifactory.types.rowexpr = {

@@ -43,6 +43,13 @@ console.log(JSON.stringify(nodeTooltip))
     .attr('width', width)
     .attr('height', height)
     .attr('transform', 'translate(50,50)')
+    .append("g")
+    .attr("class", "brush")
+    .call(d3.brush()
+    .extent( [ [0,0], [width,height] ] ) 
+    .on("brush", brushed));
+
+  
 
     var simulation = d3.forceSimulation()
   .force('link', d3.forceLink())
@@ -50,6 +57,10 @@ console.log(JSON.stringify(nodeTooltip))
     .force("center", d3.forceCenter(width / 2, height / 2))
     .force("x", d3.forceX(width / 2).strength(1))
     .force("y", d3.forceY(height / 2).strength(1))
+
+    var div = d3.select("#tooltipholder").append("div")	
+    .attr("class", "nodeInfo")				
+    .style("opacity", 0);
 
 /*var link = svg.append('g')
   .attr('class', 'links')
@@ -85,11 +96,28 @@ var node = svg.selectAll('.node')
     // _ => nodeTooltip(d)
       .style("left", (d3.event.pageX) + "px")
       .style("top", (d3.event.pageY + 10) + "px");
+
+      //show node info on mouse over
+      d3.select(this)
+      .attr("r",20)
+    div.transition()		
+        .duration(200)		
+        .style("opacity", .9);		
+    div	.html('<div class=""><div class=""><h2 class="">'+d.name+'</h2></div><div class="">'+d.name+' Lorem ipsum dolor sit amet</div></div>')	
+        .style("left", 0/*(d3.event.pageX)*/ + "%")		
+        .style("top", /*(d3.event.pageY - 100)*/ 10 + "%");	
   })
 .on("mouseout.tooltip", function() {
   tooltip.transition()
       .duration(100)
       .style("opacity", 0);
+      d3.select(this)
+              .attr("r", nodeSize)
+     //hide node info popup after mouse out         
+     div.transition()
+     .duration(100)
+     .style("opacity", 0);        
+              
   })
   .on("click",click)
   .on('dblclick',releasenode)
@@ -108,6 +136,8 @@ var node = svg.selectAll('.node')
   .attr("title",nodePopoverTitle)
   .attr("data-content",nodePopoverContent); 
 
+  $('.popover').remove();
+
   function click(d){
     console.log(d);
         // Enables popover
@@ -115,21 +145,33 @@ var node = svg.selectAll('.node')
         tooltip.transition()
       .duration(100)
       .style("opacity", 0);
-   // alert("You clicked on node " + d.name);
   }
   
-  
-  var label = svg.append("g")
-  .attr("class", "labels")
-  .selectAll("text")
-  .data(nodes)
-  .enter().append("text")
-  .attr("class", "label")
-  .text(nodeLabel)
-  .attr('text-anchor', function (d, i) {
-      return 'middle';
-  })
+  function brushed(){
+    var extent = d3.event.selection;
+    node.style("stroke", function(d) {
+        var evaluation = extent[0][0] <= d.x && d.x < extent[1][0]
+            && extent[0][1] <= d.y && d.y < extent[1][1];
+        if (evaluation == true) {
+            return "red"
+        } else {
+            return d3.select(this).attr(nodeFill);
+        }
 
+    });
+}
+  
+var label = svg.append("g")
+.attr("class", "labels")
+.selectAll("text")
+.data(nodes)
+.enter().append("text")
+.attr("class", "label")
+.text(nodeLabel)
+.attr('text-anchor', function (d, i) {
+    return 'middle';
+})
+.attr("dy","0.35em")
 
 simulation
   .nodes(nodes)
@@ -168,7 +210,7 @@ function ticked() {
                             .attr("y", function (d) {
                                 return d.y;
                             })
-                            .style("font-size", "10px").style("fill", "#fff");
+                            .style("font-size", "10px").style("fill", "#fff").style("pointer-events","none");
 }
 //customEvent - when user releases the node
 function releasenode(d) {
