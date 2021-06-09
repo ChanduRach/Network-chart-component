@@ -43,7 +43,7 @@
     <network-chart-v5 id="mychart" node-filter:rowexpr="true" link-filter:rowexpr="true"
         node-size="15 + 3*d.key" node-fill="color(d.key)" node-tooltip="`<em>node name</em> is ${d.value}`"
         node-label="d.value" node-popover-title="`<em>Title of the node</em> - ${d.value}`"
-        node-popover-content = "` color of node is ${d.value}`"></network-chart-v5>
+        node-popover-content = "` color of node is ${d.value}`" charge-strength:number="-5000"></network-chart-v5>
 
 
     <script src='https://d3js.org/d3.v5.min.js'></script>

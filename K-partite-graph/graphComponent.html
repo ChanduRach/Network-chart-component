@@ -1,6 +1,6 @@
 <template component="network-chart-v5" data:url="./sample.csv" node-filter:rowexpr="" link-filter:rowexpr=""
     width:number="700" height:number="400" node-size:rowexpr=" " node-fill:rowexpr=" " node-tooltip:rowexpr=""
-    node-label:rowexpr="" node-popover-title:rowexpr="" node-popover-content:rowexpr="">
+    node-label:rowexpr="" node-popover-title:rowexpr="" node-popover-content:rowexpr="" charge-strength:rowexpr="">
 
 
 
@@ -23,6 +23,7 @@
     var i, row, j, lj, k, lk, key, key1, key2, value, vals, id, row_nodes, col_nodes, indices1, indices2, count
 
     count = 0; 
+    //csv parse - documentation
     d3.csv("sample.csv").then(function(data) { 
      
         // Add a link between nodes[index1] and nodes[index2] referencing a data row
@@ -95,14 +96,9 @@
         }
        
 
-nodes = JSON.stringify(nodes);
-links = JSON.stringify(links)
-   
- nodes = JSON.parse(nodes)
-links = JSON.parse(links)
 
-//nodes = nodeFilter ? data.nodes.filter(nodeFilter) : data.nodes
-//links = linkFilter ? data.links.filter(linkFilter) : data.links
+nodes = nodeFilter ? nodes.filter(nodeFilter) : nodes
+links = linkFilter ? links.filter(linkFilter) : links
 
  %>
 
@@ -110,7 +106,6 @@ links = JSON.parse(links)
 nodes.forEach(d => {
     d.size = nodeSize(d)
     d.fill = nodeFill(d)
-     console.log(d.fill, d.color)
  })
   %>
 
@@ -136,10 +131,9 @@ nodes.forEach(d => {
     .on("dblclick", releaseAllNodes);
 
   
-
     var simulation = d3.forceSimulation()
   .force('link', d3.forceLink())
-   .force("charge", d3.forceManyBody().strength(-5000))
+   .force("charge", d3.forceManyBody().strength(chargeStrength))
     .force("center", d3.forceCenter(width / 2, height / 2))
     .force("x", d3.forceX(width / 2).strength(1))
     .force("y", d3.forceY(height / 2).strength(1))
@@ -282,10 +276,10 @@ function ticked() {
                             .style("font-size", "10px").style("fill", "#fff").style("pointer-events","none");
 }
 //customEvent - when user releases the node
-function releasenode(d) {
-    console.log(d)
+function releasenode(d,e) {
     d.fx = null;
     d.fy = null
+    d3.event.stopPropagation(); 
 }
 
 function dragstarted(d) {
@@ -308,6 +302,7 @@ function dragended(d) {
 }
 
 function releaseAllNodes(){
+    alert('111')
 console.log(d3.selectAll('.fixed'));
 d3.selectAll('.fixed').each(releasenode);
 $target.dispatchEvent(new CustomEvent('releasenodes', {detail: {nodes: node}}))
