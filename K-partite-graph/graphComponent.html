@@ -1,0 +1,321 @@
+<template component="network-chart-v5" data:url="./sample.csv" node-filter:rowexpr="" link-filter:rowexpr=""
+    width:number="700" height:number="400" node-size:rowexpr=" " node-fill:rowexpr=" " node-tooltip:rowexpr=""
+    node-label:rowexpr="" node-popover-title:rowexpr="" node-popover-content:rowexpr="">
+
+
+
+    <% if (!data) { %>
+    Loading...
+    <% } else { %>
+    <% //  data = JSON.parse(data.text)
+  
+    var nodeArray = [];
+    var uniqueNames = [];
+    var nodes = [],
+    links = [],
+    self = {nodes: nodes, links: links};
+
+    var keys = {},
+    cols = {},
+     node_index = {},
+     link_index = {};
+
+    var i, row, j, lj, k, lk, key, key1, key2, value, vals, id, row_nodes, col_nodes, indices1, indices2, count
+
+    count = 0; 
+    d3.csv("sample.csv").then(function(data) { 
+     
+        // Add a link between nodes[index1] and nodes[index2] referencing a data row
+  function add_link(index1, index2, row) {
+    var id = index1 + '\t' + index2
+    if (id in link_index)
+      links[link_index[id]].rows.push(row)
+    else {
+      link_index[id] = links.length
+      id = id.split('\t')[0]
+      links.push({
+        source: nodes[index1].count,
+        target: nodes[index2].count,
+        id: id,
+        rows: [row]
+      })
+    }
+  }
+
+
+        // Reset row indices
+        nodes.forEach(function(node) { node.rows = [] })
+        links.forEach(function(link) { link.rows = [] })
+
+        
+        for(i=0; row=data[i]; i++){
+            row_nodes = {}
+            // Create nodes {key, value, id, rows}
+            var columns = {}
+            keys = data.columns;
+            for (key in keys) {
+              col_nodes = row_nodes[key] = []
+              vals = keys[key];
+              vals = row[vals];
+              if (!Array.isArray(vals))
+                vals = [vals]
+
+                var z = vals.length;
+              
+                for (j=0, z < vals.length; j < z; j++) {
+                    value = vals[j]
+                    id = key + '\t' + value
+                    if (id in node_index)
+                      nodes[node_index[id]].rows.push(i)
+                    else {
+                      node_index[id] = nodes.length
+                      var sliptID = id.split("\t")[0] //splitting id and cityname
+                      nodes.push({count: count, key: key, value: value, id: sliptID, rows: [i]})
+                      count++;
+                    }
+                    col_nodes.push(node_index[id])
+                  }
+          
+
+            }
+            // Link across columns
+      for (key1 in keys) {
+        indices1 = row_nodes[key1]
+        lj = indices1.length
+        for (key2 in keys)
+          if (key2 > key1) {
+            indices2 = row_nodes[key2]
+            lk = indices2.length
+            for (j=0; j < lj; j++)
+              for (k=0; k < lk; k++)
+                add_link(indices1[j], indices2[k], i)
+          }
+      }
+            
+        }
+       
+
+nodes = JSON.stringify(nodes);
+links = JSON.stringify(links)
+   
+ nodes = JSON.parse(nodes)
+links = JSON.parse(links)
+
+//nodes = nodeFilter ? data.nodes.filter(nodeFilter) : data.nodes
+//links = linkFilter ? data.links.filter(linkFilter) : data.links
+
+ %>
+
+    <%
+nodes.forEach(d => {
+    d.size = nodeSize(d)
+    d.fill = nodeFill(d)
+     console.log(d.fill, d.color)
+ })
+  %>
+
+
+
+
+    <% 
+        
+    var tooltip = d3.select("body")
+	.append("div")
+	.attr("class", "tooltip")
+	.style("opacity", 0); 
+
+   var svg = d3.select('network-chart-v5').append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('transform', 'translate(50,50)')
+    .append("g")
+    .attr("class", "brush")
+    .call(d3.brush()
+    .extent( [ [0,0], [width,height] ] ) 
+    .on("brush", brushed))
+    .on("dblclick", releaseAllNodes);
+
+  
+
+    var simulation = d3.forceSimulation()
+  .force('link', d3.forceLink())
+   .force("charge", d3.forceManyBody().strength(-5000))
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .force("x", d3.forceX(width / 2).strength(1))
+    .force("y", d3.forceY(height / 2).strength(1))
+
+    var div = d3.select("#tooltipholder").append("div")	
+    .attr("class", "nodeInfo")				
+    .style("opacity", 0);
+
+
+var link = svg.selectAll('.link')
+                    .data(links)
+                    .enter().append('line')
+                    .attr('class', 'link')
+                    .attr('stroke', '#000')
+                    .attr('strokewidth', '1');
+					
+var node = svg.selectAll('.node')
+  // svg.append('g')
+  .attr('class', 'nodes')
+  //.selectAll('circle')
+  .data(nodes)
+  .enter().append('circle')
+  .attr('r', nodeSize)
+.attr('fill',  nodeFill )
+.on('mouseover.tooltip', function(d) {
+    tooltip.transition()
+      .duration(300)
+      .style("opacity", .8);
+    tooltip.html(nodeTooltip(d))
+    // _ => nodeTooltip(d)
+      .style("left", (d3.event.pageX) + "px")
+      .style("top", (d3.event.pageY + 10) + "px");
+  })
+.on("mouseout.tooltip", function() {
+  tooltip.transition()
+      .duration(100)
+      .style("opacity", 0);
+      d3.select(this)
+              .attr("r", 20)
+     //hide node info popup after mouse out         
+     div.transition()
+     .duration(100)
+     .style("opacity", 0);        
+              
+  })
+  .on("click",click)
+  .on('dblclick',releasenode)
+  .call(d3.drag()
+  .on('start', dragstarted)
+  .on('drag', dragged)
+  .on('end', dragended))
+
+  var popover = node
+  .attr("tabindex","0")
+  .attr("data-container","body")
+  .attr("data-html","true")
+ .attr("data-toggle","popover") 
+  .attr("data-placement","bottom")
+  .attr("data-trigger","focus") 
+  .attr("title",nodePopoverTitle)
+  .attr("data-content",nodePopoverContent); 
+
+
+
+  function click(d){
+    console.log(d);
+        // Enables popover
+        $("[data-toggle=popover]").popover(d);
+      tooltip.transition()
+     .duration(100)
+    .style("opacity", 0);
+  }
+  
+  function brushed(){
+    var extent = d3.event.selection;
+    node.style("stroke", function(d) {
+        var evaluation = extent[0][0] <= d.x && d.x < extent[1][0]
+            && extent[0][1] <= d.y && d.y < extent[1][1];
+        if (evaluation == true) {
+            return "red"
+        } else {
+            return d3.select(this).attr(nodeFill);
+        }
+
+    });
+    $target.dispatchEvent(new CustomEvent('brush', {detail: {nodes: node}}))
+}
+  
+var label = svg.append("g")
+.attr("class", "labels")
+.selectAll("text")
+.data(nodes)
+.enter().append("text")
+.attr("class", "label")
+.text( function (d, i) {
+    return d.value;
+})
+.attr('text-anchor', function (d, i) {
+    return 'middle';
+})
+.attr("dy","0.35em")
+
+simulation
+  .nodes(nodes)
+  .on('tick', ticked)
+
+simulation.force('link')
+  .links(links)
+
+function ticked() {
+  link
+    .attr('x1', function(d) {
+      return d.source.x
+    })
+    .attr('y1', function(d) {
+      return d.source.y
+    })
+    .attr('x2', function(d) {
+      return d.target.x
+    })
+    .attr('y2', function(d) {
+      return d.target.y
+    })
+
+  node
+    .attr('cx', function(d) {
+      return d.x
+    })
+    .attr('cy', function(d) {
+      return d.y
+    })
+
+    label
+                            .attr("x", function (d) {
+                                return d.x;
+                            })
+                            .attr("y", function (d) {
+                                return d.y;
+                            })
+                            .style("font-size", "10px").style("fill", "#fff").style("pointer-events","none");
+}
+//customEvent - when user releases the node
+function releasenode(d) {
+    console.log(d)
+    d.fx = null;
+    d.fy = null
+}
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.1).restart()
+  d.fx = d.x
+  d.fy = d.y
+}
+
+function dragged(d) {
+  d.fx = d3.event.x
+  d.fy = d3.event.y
+}
+//when user pins the node - customEvent
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0)
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+  d3.select(this).classed("fixed", d.fixed = true);
+  $target.dispatchEvent(new CustomEvent('pin', {detail: {nodes: d}}))
+}
+
+function releaseAllNodes(){
+console.log(d3.selectAll('.fixed'));
+d3.selectAll('.fixed').each(releasenode);
+$target.dispatchEvent(new CustomEvent('releasenodes', {detail: {nodes: node}}))
+}
+
+            });
+ %>
+
+    <% } %>
+
+</template>

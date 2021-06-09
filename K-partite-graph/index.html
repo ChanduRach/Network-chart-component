@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>network-chart-component</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.css">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <script src="//code.jquery.com/jquery.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.js"></script>
+    <style>
+        div.tooltip, div.nodeInfo {
+            position: absolute;
+            background-color: white;
+            max-width: 200px;
+            height: auto;
+            padding: 1px;
+            border-style: solid;
+            border-radius: 4px;
+            border-width: 1px;
+            box-shadow: 3px 3px 10px rgba(0, 0, 0, .5);
+            pointer-events: none;
+        }
+
+        .extent {
+            fill: #ececec;
+        }
+        
+    </style>
+</head>
+
+<body>
+   
+    <network-chart-v5 id="mychart" node-filter:rowexpr="true" link-filter:rowexpr="true"
+        node-size="15 + 3*d.key" node-fill="color(d.key)" node-tooltip="`<em>node name</em> is ${d.value}`"
+        node-label="d.value" node-popover-title="`<em>Title of the node</em> - ${d.value}`"
+        node-popover-content = "` color of node is ${d.value}`"></network-chart-v5>
+
+
+    <script src='https://d3js.org/d3.v5.min.js'></script>
+    <script src="../node_modules/lodash/lodash.min.js"></script>
+    <script src="https://unpkg.com/uifactory@0.0.9/uifactory.js" import="./graphComponent.html"></script>
+
+
+    <script>
+   
+    
+document.querySelector('#mychart').addEventListener('brush', function (e) {
+   // console.log(e.detail.nodes)   // Logs all brushed nodes
+  })
+  
+  document.querySelector('#mychart').addEventListener('pin', function (e) {
+  //  console.log(e.detail.nodes)   // Logs pinned nodes
+  })
+  
+  document.querySelector('#mychart').addEventListener('releasenodes', function (e) {
+  //  console.log(e.detail.nodes)   // Logs released nodes
+  })
+  
+        let color = d3.scaleLinear()
+            .domain([0, 5])
+            .range(['#a07336', 'violet']);
+
+
+        uifactory.types.rowexpr = {
+            parse: s => s ? new Function('d', `return ${s || 'true'}`) : s,
+            stringify: v => v
+        }
+    </script>
+
+</body>
+
+</html>
