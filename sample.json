@@ -1,0 +1,20 @@
+[
+  {
+    "city": "BLR",
+    "product": "Laptop",
+    "channel": "Online",
+    "sales": 30
+  },
+  {
+    "city": "BLR",
+    "product": "Laptop",
+    "channel": "Store",
+    "sales": 30
+  },
+  {
+    "city": "DEL",
+    "product": "Laptop",
+    "channel": "Online",
+    "sales": 10
+  }
+]

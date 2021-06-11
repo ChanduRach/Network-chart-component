@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>network-chart-component</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.css">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <script src="//code.jquery.com/jquery.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.js"></script>
+    <style>
+        div.tooltip,
+        div.nodeInfo {
+            position: absolute;
+            background-color: white;
+            max-width: 200px;
+            height: auto;
+            padding: 1px;
+            border-style: solid;
+            border-radius: 4px;
+            border-width: 1px;
+            box-shadow: 3px 3px 10px rgba(0, 0, 0, .5);
+            pointer-events: none;
+        }
+
+        .extent {
+            fill: #ececec;
+        }
+    </style>
+</head>
+
+<body>
+
+    <network-chart id="mychart" data="./chart.json" node-filter:rowexpr="true" link-filter:rowexpr="true"
+        node-size="15 + 3*d.group" node-fill="color(d.group)" node-tooltip="`<em>node name</em> is ${d.name}`"
+        node-label="d.name" node-popover-title="`<em>Title of the node</em> - ${d.value}`"
+        node-popover-content="` color of node is ${d.value}`" charge-strength:number="-5000" k-partite="false">
+    </network-chart>
+
+
+    <script src='https://d3js.org/d3.v5.min.js'></script>
+    <script src="node_modules/lodash/lodash.min.js"></script>
+    <script src="node_modules/uifactory/uifactory.js" import="network-chart.html"></script>
+
+
+    <script>
+        // TODO: Send brushend event instead 
+        document.querySelector('#mychart').addEventListener('brushend', function (e) {
+            console.log('brushend', e.detail.nodes) 
+        })
+
+        document.querySelector('#mychart').addEventListener('pin', function (e) {
+            console.log('pin', e.detail.nodes)
+        })
+
+        // TODO: rename event to releasenodes
+        document.querySelector('#mychart').addEventListener('releasenodes', function (e) {
+            console.log('release', e.detail.nodes) 
+        })
+
+        let color = d3.scaleLinear()
+            .domain([0, 5])
+            .range(['#a07336', 'violet']);
+
+
+        uifactory.types.rowexpr = {
+            parse: s => s ? new Function('d', `return ${s || 'true'}`) : s,
+            stringify: v => v
+        }
+    </script>
+
+</body>
+
+</html>
